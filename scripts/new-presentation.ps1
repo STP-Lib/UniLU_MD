@@ -19,6 +19,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+$templateRoot = Split-Path -Parent $PSScriptRoot
 
 function Normalize-Code([string]$Value) {
     $normalized = $Value.ToUpperInvariant() -replace '[^A-Z0-9]', ''
@@ -86,6 +87,9 @@ try {
     $slides = $slides.Replace('# UniLU Slidev Reference Deck', "# $Title")
     $slides = $slides.Replace('eventName: UniLU_MD', "eventName: $venueCode")
     Set-Content -LiteralPath $slidesPath -Value $slides -Encoding utf8
+
+    & pnpm --dir $templateRoot exec prettier --write $metadataPath $slidesPath
+    Assert-LastExitCode 'Generated presentation formatting'
 
     & git -C $tempPath add unilu-md.yaml slides.md
     & git -C $tempPath commit -m "Initialize $repoName from UniLU_MD"
