@@ -79,14 +79,15 @@ try {
     $metadata = $metadata -replace 'template_revision: development', "template_revision: $templateRevision"
     $metadata = $metadata -replace 'presentation_repository: STP-Lib/UniLU_MD', "presentation_repository: $slug"
     $metadata = $metadata -replace 'presentation_title: UniLU Slidev Reference Deck', "presentation_title: '$safeTitle'"
-    Set-Content -LiteralPath $metadataPath -Value $metadata -Encoding utf8
+    $utf8NoBom = New-Object System.Text.UTF8Encoding -ArgumentList $false
+    [IO.File]::WriteAllText($metadataPath, $metadata, $utf8NoBom)
 
     $slidesPath = Join-Path $tempPath 'slides.md'
     $slides = Get-Content -LiteralPath $slidesPath -Raw
     $slides = $slides.Replace('title: UniLU Slidev Reference Deck', "title: '$safeTitle'")
     $slides = $slides.Replace('# UniLU Slidev Reference Deck', "# $Title")
     $slides = $slides.Replace('eventName: UniLU_MD', "eventName: $venueCode")
-    Set-Content -LiteralPath $slidesPath -Value $slides -Encoding utf8
+    [IO.File]::WriteAllText($slidesPath, $slides, $utf8NoBom)
 
     & pnpm --dir $templateRoot exec prettier --write $metadataPath $slidesPath
     Assert-LastExitCode 'Generated presentation formatting'
