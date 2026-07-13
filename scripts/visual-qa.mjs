@@ -13,7 +13,11 @@ const baseUrl = `http://${host}:${port}`
 const artifactDir = path.resolve('.artifacts/visual')
 const baselineDir = path.resolve('tests/visual/baseline')
 const source = await fs.readFile('slides.md', 'utf8')
-const slideCount = (await parse(source, path.resolve('slides.md'))).slides.length
+const parsedDeck = await parse(source, path.resolve('slides.md'))
+const slideCount = parsedDeck.slides.length
+const outlineSlideNo =
+  parsedDeck.slides.findIndex((slide) => slide.frontmatter.layout === 'outline') + 1
+const registeredReferences = parsedDeck.slides[0]?.frontmatter.references || []
 const pnpm = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
 await fs.mkdir(artifactDir, { recursive: true })
 for (const entry of await fs.readdir(artifactDir, { withFileTypes: true })) {
@@ -67,6 +71,15 @@ try {
     const filename = `slide-${String(index).padStart(3, '0')}.png`
     await inspectAndCapture(slide, `slide ${index}`, filename, true)
 
+    const citedKeys = [
+      ...new Set(
+        [...parsedDeck.slides[index - 1].content.matchAll(/\\cite\{([^{}]+)\}/g)].flatMap((match) =>
+          match[1].split(',').map((key) => key.trim()),
+        ),
+      ),
+    ].filter(Boolean)
+    if (citedKeys.length) await inspectCitations(page, slide, index, citedKeys)
+
     let hiddenTargets = await slide.locator('.slidev-vclick-target.slidev-vclick-hidden').count()
     let clickState = 0
     while (hiddenTargets > 0 && clickState < 20) {
@@ -94,6 +107,28 @@ try {
     if (hiddenTargets > 0 && clickState >= 20)
       findings.push(`slide ${index} exceeds the 20-state animation QA limit`)
   }
+
+  if (outlineSlideNo > 0) await inspectOutlineInteractions(page, outlineSlideNo)
+
+  await page.goto(`${baseUrl}/1`, { waitUntil: 'networkidle' })
+  const titleZone = page.locator('.unilu-cover-title').first()
+  const coverTitle = titleZone.locator('h1').first()
+  await coverTitle.evaluate((element) => {
+    element.textContent =
+      'A Robust Browser-Native Framework for Reproducible Quantum Communication and Machine Learning Presentations'
+  })
+  const titleFits = await titleZone.evaluate((zone) => {
+    const zoneRect = zone.getBoundingClientRect()
+    const titleRect = zone.querySelector('h1')?.getBoundingClientRect()
+    return Boolean(
+      titleRect &&
+      titleRect.left >= zoneRect.left - 1 &&
+      titleRect.right <= zoneRect.right + 1 &&
+      titleRect.top >= zoneRect.top - 1 &&
+      titleRect.bottom <= zoneRect.bottom + 1,
+    )
+  })
+  if (!titleFits) findings.push('long cover title does not fit within the stable title zone')
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto(`${baseUrl}/1`, { waitUntil: 'networkidle' })
@@ -126,6 +161,98 @@ if (findings.length) {
   process.exit(1)
 }
 console.log(`Visual QA passed for ${slideCount} slides. Screenshots: ${artifactDir}`)
+
+async function inspectCitations(page, slide, slideNo, citedKeys) {
+  const markerText = (await slide.locator('.unilu-cite').allTextContents()).join(',')
+  const referenceLines = slide.locator('.unilu-slide-reference')
+  if ((await referenceLines.count()) !== citedKeys.length) {
+    findings.push(`slide ${slideNo} citation footer count does not match cited keys`)
+  }
+
+  for (const key of citedKeys) {
+    const expected = registeredReferences.findIndex((reference) => reference.key === key) + 1
+    if (expected < 1 || !markerText.split(/\D+/).includes(String(expected))) {
+      findings.push(`slide ${slideNo} citation '${key}' does not use stable number ${expected}`)
+    }
+  }
+
+  const referencesBox = await slide.locator('.unilu-slide-references').boundingBox()
+  const logoBox = await page.locator('.unilu-footer__unilu:visible').first().boundingBox()
+  if (referencesBox && logoBox && referencesBox.x < logoBox.x + logoBox.width + 8) {
+    findings.push(`slide ${slideNo} references do not begin to the right of the UniLU logo`)
+  }
+
+  const decoratedLinks = await slide.locator('.unilu-slide-reference a').evaluateAll(
+    (links) =>
+      links.filter((link) => {
+        const style = getComputedStyle(link)
+        return style.borderBottomStyle !== 'none' || style.textDecorationLine !== 'none'
+      }).length,
+  )
+  if (decoratedLinks) findings.push(`slide ${slideNo} reference links show decorative lines`)
+}
+
+async function inspectOutlineInteractions(page, slideNo) {
+  await page.goto(`${baseUrl}/${slideNo}`, { waitUntil: 'networkidle' })
+  const outline = page.locator('.unilu-outline').first()
+  const sections = outline.locator('.unilu-outline-section')
+  const sectionCount = await sections.count()
+  if (sectionCount < 2) {
+    findings.push('outline needs at least two automatically generated sections for interaction QA')
+    return
+  }
+
+  const initiallyVisible = await outline.locator('.unilu-outline-subsection:visible').count()
+  if (initiallyVisible !== 0) findings.push('outline subsections should begin collapsed')
+
+  const first = sections.nth(0)
+  const second = sections.nth(1)
+  const chevron = first.locator('.unilu-outline-chevron')
+  const chevronBox = await chevron.boundingBox()
+  if (!chevronBox || (await chevron.locator('path,polyline,line').count()) < 1) {
+    findings.push('outline disclosure icon is not rendered')
+  }
+  await first.locator('.unilu-outline-trigger').click()
+  await page.waitForTimeout(220)
+  if ((await first.locator('.unilu-outline-subsection:visible').count()) < 1) {
+    findings.push('first outline section did not reveal its subsections')
+  }
+
+  await second.locator('.unilu-outline-trigger').click()
+  await page.waitForTimeout(220)
+  if ((await first.locator('.unilu-outline-subsection:visible').count()) !== 0) {
+    findings.push('opening a second outline section did not collapse the first')
+  }
+  if ((await second.locator('.unilu-outline-subsection:visible').count()) < 1) {
+    findings.push('second outline section did not reveal its subsections')
+    return
+  }
+
+  await inspectAndCapture(
+    outline,
+    'outline expanded',
+    `slide-${String(slideNo).padStart(3, '0')}-expanded.png`,
+    false,
+  )
+  const target = Number(
+    await second.locator('.unilu-outline-subsection:visible').first().getAttribute('data-target'),
+  )
+  await second.locator('.unilu-outline-subsection:visible').first().click()
+  await page.waitForURL((url) => url.pathname === `/${target}`)
+
+  const returnButton = page.locator(`.slidev-page-${target} .unilu-outline-return:visible`).first()
+  if (!(await returnButton.count())) {
+    findings.push('content slide does not expose the outline-return control')
+    return
+  }
+  const returnIcon = returnButton.locator('svg')
+  const returnIconBox = await returnIcon.boundingBox()
+  if (!returnIconBox || (await returnIcon.locator('path,polyline,line').count()) < 1) {
+    findings.push('outline-return control does not render its Lucide icon')
+  }
+  await returnButton.click()
+  await page.waitForURL((url) => url.pathname === `/${slideNo}` || url.pathname === '/outline')
+}
 
 async function inspectAndCapture(slide, label, filename, compareBaseline) {
   const overflow = await slide.evaluate((root) => {

@@ -21,16 +21,20 @@ Body text uses bundled XCharter OpenType fonts. Title and closing geometry use b
 ## Geometry
 
 - Canvas: fixed `16/9`, logical width `1600`.
-- Cover: navy background; right periwinkle panel; red and pale tangent paths; title at 5% left and 17.5% top; metadata centered in the left 72% region; white institutional logos at the lower corners.
-- Content: section label and counter in the top safe band; action title below it; content bounded above the logo footer; citations centered between logos.
-- Section: `outline_bg.png`, numbered navy circle with pale-blue ring, uppercase title, red rule, optional subsection list, and footer logos.
+- Cover: navy background; right periwinkle panel; red and pale tangent paths; title centered vertically in a stable upper-left title zone; metadata centered in the left 72% region; white institutional logos at the lower corners.
+- Content: section label and counter in the top safe band; action title below it; content bounded above the logo footer; numbered citations left-aligned beside the UniLU logo.
+- Outline: `outline_bg.png`, persistent top-level section rows, accordion subsection disclosure, and direct subsection navigation generated from frontmatter.
 - Closing: horizontal mirror of the cover; contact block and QR code on the right.
 
 Cards use a maximum 6px radius. Decorative gradients, background orbs, and excessive color highlighting are outside the contract.
 
 ## Numbering
 
-Cover slides count toward the visible content total but suppress the counter. Section, closing, and blank layouts do not count. This reproduces the practical Beamer behavior without relying on route-number side effects.
+Cover slides count toward the visible content total but suppress the counter. Outline, closing, and blank layouts do not count. This reproduces the practical Beamer behavior without relying on route-number side effects.
+
+## Citations
+
+References are declared once in headmatter and numbered by declaration order. `\cite{key}` produces the same superscript number wherever that key appears and adds the full source to the current slide footer. The footer begins just to the right of the UniLU logo and remains clear of the SnT logo.
 
 ## Visual QA
 

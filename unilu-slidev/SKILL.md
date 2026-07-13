@@ -41,7 +41,7 @@ Names must match `YYMMDD_<TOPIC>_<VENUE>`, for example `260713_QML_QCNC`. Reposi
 3. Edit `slides.md`; keep metadata in headmatter and one concise action-title H1 on each content slide.
 4. Use `<v-clicks>`, `v-click`, and `v-after` for explanatory sequence. Keep element dimensions stable across states.
 5. Add speaker notes as a final HTML comment. Never place secrets in notes.
-6. Cite the first source-defining slide and reproduced figures with `<FrameCite>`; use DOI or arXiv links when available.
+6. Register sources in headmatter and cite the first source-defining slide and reproduced figures with `\cite{key}`; use DOI or arXiv links when available.
 7. Apply the `humanizer` skill conservatively before final prose delivery: preserve notation, citations, scope, and scientific stance.
 
 Do not invent citations, claims, results, affiliations, dates, or venue details.

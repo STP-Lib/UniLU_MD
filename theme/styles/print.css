@@ -7,4 +7,12 @@
   .slidev-vclick-target {
     transition: none !important;
   }
+
+  .unilu-outline-subsections {
+    display: grid !important;
+  }
+
+  .unilu-outline-return {
+    display: none !important;
+  }
 }

@@ -42,6 +42,25 @@ export async function analyzeDeck(source, filepath = 'slides.md') {
   }
   if (first?.frontmatter?.theme !== 'unilu') errors.push('Headmatter must use theme: unilu.')
 
+  const references = Array.isArray(first?.frontmatter?.references)
+    ? first.frontmatter.references
+    : []
+  const referenceKeys = new Set()
+  references.forEach((reference, index) => {
+    const label = `Reference ${index + 1}`
+    if (!reference?.key || !reference?.authorYear || !reference?.title) {
+      errors.push(`${label} needs key, authorYear, and title.`)
+      return
+    }
+    if (referenceKeys.has(reference.key)) {
+      errors.push(`Reference key '${reference.key}' is duplicated.`)
+    }
+    referenceKeys.add(reference.key)
+    if (!reference.doi && !reference.url) {
+      warnings.push(`${label} ('${reference.key}') has no DOI or URL.`)
+    }
+  })
+
   if (/\b(TODO|TBD|PLACEHOLDER)\b/i.test(source)) {
     errors.push('Deck contains TODO, TBD, or PLACEHOLDER text.')
   }
@@ -51,11 +70,32 @@ export async function analyzeDeck(source, filepath = 'slides.md') {
     )
   }
 
+  const outlineSlides = parsed.slides
+    .map((slide, index) => ({ slide, index }))
+    .filter(({ slide }) => slide.frontmatter.layout === 'outline')
+  if (outlineSlides.length !== 1) {
+    errors.push(`Deck needs exactly one outline slide; found ${outlineSlides.length}.`)
+  } else if (outlineSlides[0].index !== 1) {
+    errors.push('The outline slide must appear immediately after the cover.')
+  }
+
+  const sectionTitles = new Set()
+
   parsed.slides.forEach((slide, index) => {
     const layout = slide.frontmatter.layout || (index === 0 ? 'cover' : 'default')
     const heading = slide.content.match(/^#\s+(.+)$/m)?.[1]?.trim()
+
     if (regularLayouts.has(layout) && !heading) {
       errors.push(`Slide ${index + 1} (${layout}) needs one action-title H1.`)
+    }
+    if (regularLayouts.has(layout)) {
+      const section = String(slide.frontmatter.section || '').trim()
+      const subsection = String(slide.frontmatter.subsection || '').trim()
+      if (!section) errors.push(`Slide ${index + 1} (${layout}) needs section metadata.`)
+      if (!subsection) {
+        errors.push(`Slide ${index + 1} (${layout}) needs subsection metadata for the outline.`)
+      }
+      if (section) sectionTitles.add(section)
     }
     if (heading && heading.length > 86) {
       warnings.push(
@@ -79,7 +119,21 @@ export async function analyzeDeck(source, filepath = 'slides.md') {
         errors.push(`Slide ${index + 1} contains an img element without useful alt text.`)
       }
     }
+
+    for (const match of slide.content.matchAll(/\\cite\{([^{}]+)\}/g)) {
+      const keys = match[1]
+        .split(',')
+        .map((key) => key.trim())
+        .filter(Boolean)
+      for (const key of keys) {
+        if (!referenceKeys.has(key)) {
+          errors.push(`Slide ${index + 1} cites unknown reference key '${key}'.`)
+        }
+      }
+    }
   })
+
+  if (!sectionTitles.size) errors.push('Deck needs at least one content section.')
 
   return { slideCount: parsed.slides.length, errors, warnings }
 }

@@ -31,6 +31,7 @@ For a substantial deck, specify each planned slide as: number, purpose, action t
 ## Citations
 
 - Cite the first slide that depends on a source and every reproduced figure.
+- Register each source once in headmatter and cite it with `\cite{key}`; never type superscript numbers manually.
 - Show author/year, title, and DOI or arXiv link where available.
 - Do not repeat the same footer on every explanatory slide.
 - Never invent or infer a DOI; verify it from the paper or trusted metadata.

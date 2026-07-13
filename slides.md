@@ -15,6 +15,15 @@ transition: fade-out
 drawings:
   persist: false
 mcp: true
+references:
+  - key: slidev
+    authorYear: Fu and Slidev contributors, 2026
+    title: Slidev documentation
+    url: https://sli.dev/
+  - key: unilu-md
+    authorYear: Tariq, 2026
+    title: UniLU_MD theme and workflow contract
+    url: https://github.com/STP-Lib/UniLU_MD
 ---
 
 # UniLU Slidev Reference Deck
@@ -24,24 +33,20 @@ Introduce the purpose of this reference deck. PRIVATE-NOTES-MUST-NOT-SHIP
 -->
 
 ---
-layout: section
-sectionNumber: '01'
-sectionTitle: Academic presentations in the browser
-subsections:
-  - Argument and evidence
-  - Mathematics and figures
-  - Controlled publication
+layout: outline
+routeAlias: outline
 ---
 
 ---
-section: Motivation
+section: Why Slidev
+subsection: Motivation and context
 ---
 
 # Browser-native talks can retain academic discipline
 
 <v-clicks>
 
-- **Markdown authoring** keeps the argument visible and reviewable.
+- **Markdown authoring** keeps the argument visible and reviewable. \cite{slidev}
 - **KaTeX and SVG** preserve equations and scientific figures.
 - **Explicit quality gates** separate editing, private review, and public release.
 
@@ -59,7 +64,8 @@ Modern tooling must improve iteration without weakening provenance, legibility, 
 
 ---
 layout: two-cols
-section: Theme contract
+section: Why Slidev
+subsection: Theme contract
 ---
 
 # The browser layout follows the established 16:9 geometry
@@ -78,9 +84,12 @@ section: Theme contract
   <div><span>Accent blue</span><strong>#5b90cc</strong></div>
 </div>
 
+The UniLU implementation preserves the established presentation geometry. \cite{unilu-md}
+
 ---
 layout: equation
-section: Mathematics
+section: Scientific authoring
+subsection: Mathematics
 ---
 
 # Quantum notation remains native and selectable
@@ -99,7 +108,8 @@ Use KaTeX for equations. Compile TikZ, quantikz, and PGFPlots to SVG while retai
 
 ---
 layout: figure
-section: Evidence
+section: Scientific authoring
+subsection: Evidence and provenance
 ---
 
 # One exhibit should carry the result slide
@@ -108,14 +118,11 @@ section: Evidence
   <div>Source</div><span>→</span><div>Analysis</div><span>→</span><div class="accent">Supported claim</div>
 </div>
 
-<FrameCite
-  author-year="Tariq, 2026"
-  title="UniLU_MD theme and workflow contract"
-  url="https://github.com/STP-Lib/UniLU_MD"
-/>
+The workflow keeps authoring and evidence traceable. \cite{slidev,unilu-md}
 
 ---
-section: Summary
+section: Controlled publication
+subsection: Release workflow
 ---
 
 # The workflow keeps progress private until release

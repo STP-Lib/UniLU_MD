@@ -9,17 +9,28 @@ institute: Institute
 eventName: Event
 eventFull: Full Event
 date: Today
+references:
+  - key: source
+    authorYear: Author, 2026
+    title: Source title
+    doi: 10.0000/example
 ---
 
 # Test
 
 ---
-section: Test
+layout: outline
+routeAlias: outline
+---
+
+---
+section: Test section
+subsection: Test subsection
 ---
 
 # A concise action title
 
-Evidence.
+Evidence. \\cite{source}
 `
 
 describe('repository naming', () => {
@@ -37,7 +48,7 @@ describe('deck rules', () => {
   it('accepts a minimal academic deck', async () => {
     const result = await analyzeDeck(validDeck)
     expect(result.errors).toEqual([])
-    expect(result.slideCount).toBe(2)
+    expect(result.slideCount).toBe(3)
   })
 
   it('rejects raw TikZ and missing action titles', async () => {
@@ -46,5 +57,18 @@ describe('deck rules', () => {
     )
     expect(result.errors.join('\n')).toMatch(/TikZ/)
     expect(result.errors.join('\n')).toMatch(/action-title/)
+  })
+
+  it('rejects unknown citations and missing subsection metadata', async () => {
+    const result = await analyzeDeck(
+      validDeck.replace('subsection: Test subsection', '').replace('cite{source}', 'cite{missing}'),
+    )
+    expect(result.errors.join('\n')).toMatch(/subsection metadata/)
+    expect(result.errors.join('\n')).toMatch(/unknown reference key 'missing'/)
+  })
+
+  it('requires one outline immediately after the cover', async () => {
+    const result = await analyzeDeck(validDeck.replace('layout: outline', 'layout: blank'))
+    expect(result.errors.join('\n')).toMatch(/exactly one outline slide/)
   })
 })
