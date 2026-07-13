@@ -10,7 +10,7 @@ import { PNG } from 'pngjs'
 import { resolveSlidevBin, slidevChildEnvironment } from './slidev-runtime.mjs'
 
 const port = Number(process.env.SLIDEV_QA_PORT || 4174)
-const host = '127.0.0.1'
+const host = 'localhost'
 const baseUrl = `http://${host}:${port}`
 const useBuiltOutput = process.argv.includes('--dist')
 const artifactDir = path.resolve('.artifacts/visual')
