@@ -13,6 +13,7 @@
     "dev:host": "node scripts/dev.mjs --remote --no-open",
     "free-ports": "node scripts/dev.mjs --free-only",
     "build": "node scripts/run-slidev.mjs build slides.md",
+    "build:local": "node scripts/workflow.mjs build",
     "build:public": "node scripts/build-pages.mjs",
     "export": "node scripts/run-slidev.mjs export slides.md --output presentation.pdf",
     "export:clicks": "node scripts/run-slidev.mjs export slides.md --with-clicks --output presentation-with-clicks.pdf",
@@ -21,8 +22,16 @@
     "lint:md": "markdownlint-cli2",
     "check:deck": "node scripts/check-deck.mjs slides.md",
     "qa:visual": "node scripts/visual-qa.mjs",
+    "qa:visual:dist": "node scripts/visual-qa.mjs --dist",
     "test": "vitest run",
-    "check": "pnpm format:check && pnpm lint:md && pnpm check:deck && pnpm test && pnpm build && pnpm qa:visual"
+    "scratchpad:init": "node scripts/scratchpad.mjs init",
+    "scratchpad:check": "node scripts/scratchpad.mjs check",
+    "scratchpad:handoff": "node scripts/scratchpad.mjs handoff",
+    "update:local": "node scripts/workflow.mjs content",
+    "update:visual": "node scripts/workflow.mjs visual",
+    "check:full": "node scripts/workflow.mjs full",
+    "check": "pnpm check:full",
+    "timings": "node scripts/workflow.mjs report"
   },
   "devDependencies": {
     "@iconify-json/lucide": "1.2.117",

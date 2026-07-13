@@ -2,7 +2,7 @@
 
 `UniLU_MD` is the canonical Slidev template and Codex skill for University of Luxembourg and SnT academic presentations. It ports the visual contract and writing practices from `UniLU_PPT` to a browser-native, Markdown-first workflow.
 
-## Local Use
+## Local use
 
 Prerequisites: Node 20.12 or newer and pnpm 11.10.0.
 
@@ -12,9 +12,29 @@ pnpm exec playwright install chromium
 pnpm dev
 ```
 
-Run the complete quality gate with `pnpm check`. Export a backup PDF with `pnpm export:clicks`.
+Use the timed gates while editing:
 
-## New Presentation
+```powershell
+.\Presentation-Workflow.cmd build
+.\Presentation-Workflow.cmd content
+.\Presentation-Workflow.cmd visual
+.\Presentation-Workflow.cmd full
+.\Presentation-Workflow.cmd report
+```
+
+`build` reuses an unchanged verified production build, `content` formats and checks local deck content, and `full` always rebuilds before visual QA. Timing records are stored under `.artifacts/timings/`; Node totals include process startup but exclude the final timing-file write. Export a backup PDF with `pnpm export:clicks`.
+
+## New presentation
+
+Create a local-only presentation without GitHub:
+
+```powershell
+.\New-Local-Presentation.cmd `
+  -Topic QRC -Venue SIGCOM -Title "Quantum Reservoir Computing" `
+  -LocalRoot C:\Codes\Presentations
+```
+
+The local generator times each scaffold step and reuses source-hashed theme and lock caches. It also creates `content/deck-scratchpad.md` for lightweight ideation.
 
 Run `New-Presentation.cmd` or:
 
@@ -27,7 +47,7 @@ The script creates a private repository under `STP-Lib` named `YYMMDD_<TOPIC>_<V
 
 Generated repositories contain presentation content, runtime and QA scripts, required assets, and a packed revision-pinned theme. They do not copy the canonical `theme/` source, generator, or `unilu-slidev/` skill. Each repository receives a README for its own title, venue, editing, remote-control, testing, and publication workflow.
 
-## Phone Remote
+## Phone remote
 
 For a laptop and phone on the same Wi-Fi network:
 
@@ -39,7 +59,7 @@ The launcher prints an audience URL, a compact phone-control URL at `/entry/`, a
 
 For devices on different networks, set `SLIDEV_REMOTE_PASS` and run `pnpm dev -- --remote --tunnel`. The resulting tunnel is temporary and public.
 
-## Publication Safety
+## Publication safety
 
 Commits and pushes do not publish the presentation. `.github/workflows/pages.yml` has a manual trigger only and requires the value `PUBLISH`.
 
@@ -47,6 +67,6 @@ Public publication is the final step. Run `Publish-Presentation.cmd` only after 
 
 Private browser review uses GitHub Codespaces. A private repository does not make a normal GitHub Pages site private.
 
-## Skill
+## Skills
 
-The reusable Codex skill is in `unilu-slidev/`. Its detailed references cover content design, layouts, LaTeX compatibility, Beamer migration, GitHub workflow, and visual QA.
+The `slide-deck-scratchpad/` skill owns raw ideas and the approved outline handoff. The `unilu-slidev/` skill owns `slides.md`, layout implementation, rendering, QA, export, and publication.

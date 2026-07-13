@@ -1,5 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs/promises'
+import { createServer } from 'node:http'
 import path from 'node:path'
 import process from 'node:process'
 import { parse } from '@slidev/parser'
@@ -9,8 +10,9 @@ import { PNG } from 'pngjs'
 import { resolveSlidevBin, slidevChildEnvironment } from './slidev-runtime.mjs'
 
 const port = Number(process.env.SLIDEV_QA_PORT || 4174)
-const host = 'localhost'
+const host = '127.0.0.1'
 const baseUrl = `http://${host}:${port}`
+const useBuiltOutput = process.argv.includes('--dist')
 const artifactDir = path.resolve('.artifacts/visual')
 const baselineDir = path.resolve('tests/visual/baseline')
 const source = await fs.readFile('slides.md', 'utf8')
@@ -27,15 +29,26 @@ for (const entry of await fs.readdir(artifactDir, { withFileTypes: true })) {
     await fs.unlink(path.join(artifactDir, entry.name))
 }
 
-const server = spawn(process.execPath, [resolveSlidevBin(), 'slides.md', '--port', String(port)], {
-  stdio: ['ignore', 'pipe', 'pipe'],
-  shell: false,
-  detached: process.platform !== 'win32',
-  env: slidevChildEnvironment(),
-})
 let serverLog = ''
-server.stdout.on('data', (chunk) => (serverLog += chunk.toString()))
-server.stderr.on('data', (chunk) => (serverLog += chunk.toString()))
+let slidevServer
+let builtServer
+if (useBuiltOutput) {
+  builtServer = await startBuiltServer(path.resolve('dist'), port, host)
+  serverLog = `Serving the existing production build from ${path.resolve('dist')}`
+} else {
+  slidevServer = spawn(
+    process.execPath,
+    [resolveSlidevBin(), 'slides.md', '--port', String(port)],
+    {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      shell: false,
+      detached: process.platform !== 'win32',
+      env: slidevChildEnvironment(),
+    },
+  )
+  slidevServer.stdout.on('data', (chunk) => (serverLog += chunk.toString()))
+  slidevServer.stderr.on('data', (chunk) => (serverLog += chunk.toString()))
+}
 
 let browser
 const findings = []
@@ -58,12 +71,33 @@ try {
     if (!/Wake Lock permission request denied/i.test(error.message))
       findings.push(`page: ${error.message}`)
   })
+  page.on('requestfailed', (request) => {
+    if (shouldTrackRequest(request)) {
+      findings.push(
+        `request failed: ${request.url()} (${request.failure()?.errorText || 'unknown'})`,
+      )
+    }
+  })
+  page.on('response', (response) => {
+    const request = response.request()
+    if (response.status() >= 400 && shouldTrackRequest(request)) {
+      findings.push(`response ${response.status()}: ${request.url()}`)
+    }
+  })
 
   for (let index = 1; index <= slideCount; index += 1) {
     await page.goto(`${baseUrl}/${index}`, { waitUntil: 'networkidle' })
     const slide = page.locator(`.slidev-page-${index} > .slidev-layout`).first()
     await slide.waitFor({ state: 'visible' })
     await page.evaluate(() => document.fonts.ready)
+    const brokenImages = await slide
+      .locator('img')
+      .evaluateAll((images) =>
+        images
+          .filter((image) => !image.complete || image.naturalWidth === 0)
+          .map((image) => image.currentSrc || image.getAttribute('src') || '<missing src>'),
+      )
+    for (const image of brokenImages) findings.push(`slide ${index} has a broken image: ${image}`)
     const filename = `slide-${String(index).padStart(3, '0')}.png`
     await inspectAndCapture(slide, `slide ${index}`, filename, true)
 
@@ -148,7 +182,8 @@ try {
   findings.push(`qa harness: ${error instanceof Error ? error.message : String(error)}`)
 } finally {
   if (browser) await browser.close()
-  stopProcessTree(server.pid)
+  if (builtServer) await closeServer(builtServer)
+  else stopProcessTree(slidevServer?.pid)
 }
 
 if (findings.length) {
@@ -311,6 +346,95 @@ async function waitForServer(url, timeoutMs) {
     await new Promise((resolve) => setTimeout(resolve, 400))
   }
   throw new Error(`Slidev did not start within ${timeoutMs / 1000}s.`)
+}
+
+async function startBuiltServer(root, serverPort, serverHost) {
+  if (!(await exists(path.join(root, 'index.html')))) {
+    throw new Error('dist/index.html is missing; run the production build before visual QA --dist.')
+  }
+
+  const server = createServer(async (request, response) => {
+    try {
+      const requestUrl = new URL(request.url || '/', `http://${serverHost}:${serverPort}`)
+      const decodedPath = decodeURIComponent(requestUrl.pathname)
+      let target = path.resolve(root, `.${decodedPath}`)
+      if (!target.startsWith(`${root}${path.sep}`) && target !== root) {
+        response.writeHead(403)
+        response.end('Forbidden')
+        return
+      }
+
+      try {
+        const stat = await fs.stat(target)
+        if (stat.isDirectory()) target = path.join(target, 'index.html')
+        else if (!stat.isFile()) throw new Error('Not a file')
+        await fs.access(target)
+      } catch {
+        if (shouldServeIndex(request, decodedPath)) target = path.join(root, 'index.html')
+        else {
+          response.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' })
+          response.end('Not found')
+          return
+        }
+      }
+
+      const body = await fs.readFile(target)
+      response.writeHead(200, {
+        'cache-control': 'no-store',
+        'content-type': contentType(target),
+      })
+      response.end(body)
+    } catch (error) {
+      response.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' })
+      response.end(error instanceof Error ? error.message : String(error))
+    }
+  })
+
+  await new Promise((resolve, reject) => {
+    server.once('error', reject)
+    server.listen(serverPort, serverHost, resolve)
+  })
+  return server
+}
+
+function shouldServeIndex(request, pathname) {
+  const acceptsHtml = String(request.headers.accept || '').includes('text/html')
+  return acceptsHtml && (!path.extname(pathname) || pathname.endsWith('/'))
+}
+
+function shouldTrackRequest(request) {
+  if (!['document', 'font', 'image', 'script', 'stylesheet'].includes(request.resourceType())) {
+    return false
+  }
+  return !/^https:\/\/fonts\.(?:googleapis|gstatic)\.com\//i.test(request.url())
+}
+
+function closeServer(server) {
+  return new Promise((resolve, reject) => {
+    server.close((error) => (error ? reject(error) : resolve()))
+  })
+}
+
+function contentType(file) {
+  const extension = path.extname(file).toLowerCase()
+  return (
+    {
+      '.css': 'text/css; charset=utf-8',
+      '.html': 'text/html; charset=utf-8',
+      '.js': 'text/javascript; charset=utf-8',
+      '.json': 'application/json; charset=utf-8',
+      '.gif': 'image/gif',
+      '.jpeg': 'image/jpeg',
+      '.jpg': 'image/jpeg',
+      '.otf': 'font/otf',
+      '.png': 'image/png',
+      '.svg': 'image/svg+xml',
+      '.ttf': 'font/ttf',
+      '.webp': 'image/webp',
+      '.woff': 'font/woff',
+      '.woff2': 'font/woff2',
+    }[extension] || 'application/octet-stream'
+  )
 }
 
 function nonBlankRatio(image) {

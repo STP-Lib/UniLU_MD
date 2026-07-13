@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Slide Deck Scratchpad'
+  short_description: 'Brainstorm and approve academic slide ideas'
+  default_prompt: 'Use $slide-deck-scratchpad to turn my raw presentation ideas into an approved deck handoff.'

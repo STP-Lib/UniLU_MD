@@ -7,17 +7,19 @@ description: Create, migrate, edit, review, preview, test, export, synchronize, 
 
 Build academically rigorous browser presentations while preserving the established UniLU/SnT theme and separating private progress pushes from public publication.
 
-## Locate The Project
+## Locate the project
 
 Canonical template: `https://github.com/STP-Lib/UniLU_MD`.
 
 Prefer an existing local presentation repository. If operating on the template itself, use `C:\Codes\[STStyles]\UniLU_MD` when available. Before pulling, check `git status --short --branch`; fast-forward only a clean, non-diverged worktree. Never overwrite dirty user work.
 
-## Route The Task
+## Route the task
 
-- New presentation repository: read `references/github-workflow.md`, then run `scripts/new-presentation.ps1` from the canonical template.
+- Raw ideas, narrative exploration, slide cards, or a scratchpad handoff: use the companion `slide-deck-scratchpad` skill first; return here only after the outline is proposed or approved.
+- New local-only presentation: run `scripts/new-local-presentation.ps1` from the canonical template. Use this when the user gives a local directory or does not ask for a GitHub repository.
+- New private GitHub presentation repository: read `references/github-workflow.md`, then run `scripts/new-presentation.ps1` from the canonical template.
 - Substantial writing or restructuring: read `references/content-guidelines.md` and draft `content/deck-outline.yaml` first.
-- Layout implementation: read `references/slide-patterns.md` and `references/theme-contract.md`.
+- Layout implementation: locate the relevant heading in `references/slide-patterns.md` with `rg -n "^## |<layout-or-pattern>"`, then read that section and `references/theme-contract.md`.
 - Equations or TeX figures: read `references/latex-compatibility.md`.
 - Beamer migration: read `references/migration-from-beamer.md` plus the relevant source deck.
 - Publication, Codespaces, repository sync, or theme upgrade: read `references/github-workflow.md`.
@@ -25,7 +27,18 @@ Prefer an existing local presentation repository. If operating on the template i
 
 ## Create
 
-Use the repository script; it enforces private visibility and the required name:
+Use the local script for deterministic local scaffolding. It copies only required source files, packs the theme, writes a minimal starter deck, and never copies `node_modules`, `dist`, `.artifacts`, or an existing presentation directory wholesale:
+
+```powershell
+.\New-Local-Presentation.cmd `
+  -Topic QRC -Venue SIGCOM -Title "Time-Series Forecasting with Quantum Reservoir Computing" `
+  -DateCode 260724 -DateText "July 24, 2026" -EventName "QRC seminar" `
+  -LocalRoot C:\Codes\Presentations -InitGit
+```
+
+The generator times scaffold copy, theme packaging, lock creation, formatting, and Git setup. It caches the packed theme and standalone lock by source hash. Pass `-NoCache` only for a cold benchmark.
+
+Use the repository script only when a private GitHub repository is required; it enforces private visibility and the required name:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/new-presentation.ps1 `
@@ -35,6 +48,20 @@ powershell -ExecutionPolicy Bypass -File scripts/new-presentation.ps1 `
 Names must match `YYMMDD_<TOPIC>_<VENUE>`, for example `260713_QML_QCNC`. Repositories belong to `STP-Lib` and are private by default. Do not enable Pages during creation.
 
 Generated repositories are lean presentation projects. They carry a packed, revision-pinned theme and required runtime, QA, assets, setup, and publication files; they do not duplicate canonical theme source, the generator, or this skill.
+
+## Iterate efficiently
+
+Use the narrowest safe timed gate while authoring:
+
+```powershell
+.\Presentation-Workflow.cmd build    # install if needed; reuse an unchanged verified build
+.\Presentation-Workflow.cmd content  # format content and run deck rules
+.\Presentation-Workflow.cmd visual   # add browser QA after rendering-sensitive edits
+.\Presentation-Workflow.cmd full     # fresh build plus full delivery QA
+.\Presentation-Workflow.cmd report   # show recent workflow durations
+```
+
+Run the `content` mode for prose and speaker-note edits that do not change structure or layout. Run `visual` after metadata, outline, layout, click, equation, figure, or asset edits. Always run `full` or `pnpm check` before delivery, export, synchronization, or publication. Timed workflows write machine-readable records under `.artifacts/timings/`; report the latest total and any cache hit or escalation. On non-Windows systems, run the equivalent `node scripts/workflow.mjs <mode>` command.
 
 ## Author
 
@@ -48,7 +75,7 @@ Generated repositories are lean presentation projects. They carry a packed, revi
 
 Do not invent citations, claims, results, affiliations, dates, or venue details.
 
-## Edit With Slidev MCP
+## Edit with Slidev MCP
 
 When a Slidev 52.17.0 server is running, prefer its structured MCP operations for listing, reading, inserting, updating, moving, or removing slides:
 
@@ -59,20 +86,19 @@ stdio: pnpm slidev mcp slides.md
 
 Keep the HTTP endpoint on localhost or a private Codespaces port. Direct Markdown edits remain the fallback.
 
-## Preview And Verify
+## Preview and verify
 
 ```powershell
-pnpm install
-pnpm exec playwright install chromium
+.\Presentation-Workflow.cmd build
 pnpm dev
 pnpm dev -- --remote
 pnpm check
 pnpm export:clicks
 ```
 
-`pnpm check` is the delivery gate: formatting, Markdown lint, deck rules, tests, production build, and Playwright visual QA. Inspect `.artifacts/visual/` after layout changes. Verify desktop framing, click order, equations, figure sharpness, footer clearance, notes, and the exported backup PDF.
+`pnpm check` is the delivery gate: formatting, Markdown lint, deck rules, tests, a fresh production build, and Playwright visual QA against that build. Inspect `.artifacts/visual/` after layout changes. Verify desktop framing, click order, equations, figure sharpness, footer clearance, notes, and the exported backup PDF.
 
-## Mathematics And Figures
+## Mathematics and figures
 
 - KaTeX-compatible equations stay as `$...$` or `$$...$$`.
 - Reusable quantum and calculus macros live in `setup/katex.ts`; keep `throwOnError: true`.
@@ -97,7 +123,7 @@ Run `Publish-Presentation.cmd` only when the user explicitly requests public pub
 
 Never invoke the Pages workflow merely to test it. A private repository does not make a normal GitHub Pages site private.
 
-## Learn Verified Fixes
+## Learn verified fixes
 
 After a non-obvious issue is solved and verified:
 

@@ -80,8 +80,18 @@ if ($repositoryExists) {
 }
 
 $template = 'STP-Lib/UniLU_MD'
+$localRevision = (& git -C $templateRoot rev-parse HEAD).Trim()
+Assert-LastExitCode 'Local template revision lookup'
+$localChanges = @(& git -C $templateRoot status --porcelain --untracked-files=normal)
+Assert-LastExitCode 'Local template status check'
+if ($localChanges.Count -gt 0) {
+    throw 'Private repository creation requires a clean canonical template worktree.'
+}
 $templateRevision = (& gh api "repos/$template/commits/main" --jq '.sha').Trim()
 Assert-LastExitCode 'Template revision lookup'
+if ($localRevision -ne $templateRevision) {
+    throw "Local template revision $localRevision does not match $template main at $templateRevision. Synchronize and retry."
+}
 
 $tempBase = [IO.Path]::GetFullPath((Join-Path ([IO.Path]::GetTempPath()) 'unilu-md-presentations'))
 New-Item -ItemType Directory -Force -Path $tempBase | Out-Null
@@ -105,6 +115,7 @@ try {
         'AGENTS.md',
         'LICENSE',
         'Open-Presentation.cmd',
+        'Presentation-Workflow.cmd',
         'Publish-Presentation.cmd',
         'THIRD_PARTY_NOTICES.md',
         'content',
@@ -116,12 +127,15 @@ try {
         'scripts/open-presentation.ps1',
         'scripts/publish-presentation.ps1',
         'scripts/run-slidev.mjs',
+        'scripts/scratchpad.mjs',
         'scripts/slidev-runtime.mjs',
         'scripts/sync-theme.ps1',
+        'scripts/visual-qa.mjs',
+        'scripts/workflow.mjs',
         'setup',
         'slides.md',
         'tests/unit/deck-rules.test.ts',
-        'tests/visual',
+        'tests/unit/scratchpad.test.ts',
         'tsconfig.json',
         'unilu-md.yaml'
     )
@@ -168,7 +182,7 @@ minimumReleaseAgeExclude:
     $markdownConfigPath = Join-Path $tempPath '.markdownlint-cli2.jsonc'
     $markdownConfig = Get-Content -LiteralPath $markdownConfigPath -Raw
     $markdownConfig = $markdownConfig.Replace(
-        '"globs": ["README.md", "AGENTS.md", "unilu-slidev/**/*.md"]',
+        '"globs": ["README.md", "AGENTS.md", "unilu-slidev/**/*.md", "slide-deck-scratchpad/**/*.md"]',
         '"globs": ["README.md", "AGENTS.md"]'
     )
     [IO.File]::WriteAllText($markdownConfigPath, $markdownConfig, $utf8NoBom)
@@ -184,6 +198,10 @@ minimumReleaseAgeExclude:
     $agents = $agents.Replace(
         '- Use `unilu-slidev/SKILL.md` for all creation, migration, editing, review, export, and publication work in this repository.',
         '- Use the canonical UniLU Slidev skill at `C:\Codes\[STStyles]\UniLU_MD\unilu-slidev\SKILL.md` when available; otherwise consult `https://github.com/STP-Lib/UniLU_MD/tree/main/unilu-slidev`.'
+    )
+    $agents = $agents.Replace(
+        '- Use `slide-deck-scratchpad/SKILL.md` for raw ideation, slide cards, layout or animation intent, and outline handoff. Keep `deck-scratchpad.md` -> `deck-outline.yaml` -> `slides.md` as the ownership boundary.',
+        '- Use the companion scratchpad skill at `C:\Codes\[STStyles]\UniLU_MD\slide-deck-scratchpad\SKILL.md` when available; otherwise preserve the `deck-scratchpad.md` -> `deck-outline.yaml` -> `slides.md` boundary.'
     )
     [IO.File]::WriteAllText($agentsPath, $agents, $utf8NoBom)
 
@@ -201,6 +219,22 @@ minimumReleaseAgeExclude:
     $slides = $slides.Replace('# UniLU Slidev Reference Deck', "# $Title")
     $slides = $slides.Replace('eventName: UniLU_MD', "eventName: $venueCode")
     [IO.File]::WriteAllText($slidesPath, $slides, $utf8NoBom)
+
+    $outlinePath = Join-Path $tempPath 'content/deck-outline.yaml'
+    $outline = Get-Content -LiteralPath $outlinePath -Raw
+    $outline = $outline -replace '(?m)^title:\s*.*$', "title: '$safeTitle'"
+    $outline = $outline -replace '(?m)^audience:\s*.*$', "audience: '$venueCode'"
+    $outline = $outline.Replace('action_title: UniLU Slidev Reference Deck', "action_title: '$safeTitle'")
+    [IO.File]::WriteAllText($outlinePath, $outline, $utf8NoBom)
+
+    Push-Location -LiteralPath $tempPath
+    try {
+        & node scripts/scratchpad.mjs init --force --title $Title --audience $venueCode
+        Assert-LastExitCode 'Scratchpad initialization'
+    }
+    finally {
+        Pop-Location
+    }
 
     $readme = @'
 # {{TITLE}}
