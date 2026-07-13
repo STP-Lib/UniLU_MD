@@ -34,6 +34,8 @@ powershell -ExecutionPolicy Bypass -File scripts/new-presentation.ps1 `
 
 Names must match `YYMMDD_<TOPIC>_<VENUE>`, for example `260713_QML_QCNC`. Repositories belong to `STP-Lib` and are private by default. Do not enable Pages during creation.
 
+Generated repositories are lean presentation projects. They carry a packed, revision-pinned theme and required runtime, QA, assets, setup, and publication files; they do not duplicate canonical theme source, the generator, or this skill.
+
 ## Author
 
 1. Establish audience, duration, central claim, section order, and evidence map in `content/deck-outline.yaml`.
@@ -63,6 +65,7 @@ Keep the HTTP endpoint on localhost or a private Codespaces port. Direct Markdow
 pnpm install
 pnpm exec playwright install chromium
 pnpm dev
+pnpm dev -- --remote
 pnpm check
 pnpm export:clicks
 ```
@@ -84,7 +87,7 @@ Theme updates are explicit and test-gated:
 powershell -ExecutionPolicy Bypass -File scripts/sync-theme.ps1 -Ref v1.0.0
 ```
 
-Review the diff and rerun visual QA before committing. An older presentation remains pinned to its recorded template revision until deliberately upgraded.
+Synchronization repacks the selected canonical theme, merges shared setup and required assets, updates the dependency lock and recorded revision, and runs the full quality gate. It does not copy theme source into the presentation. Review the diff before committing. An older presentation remains pinned until deliberately upgraded.
 
 ## Publish
 

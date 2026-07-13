@@ -13,9 +13,9 @@ $artifactDir = Join-Path $root '.artifacts'
 New-Item -ItemType Directory -Force -Path $artifactDir | Out-Null
 $stdout = Join-Path $artifactDir 'slidev.stdout.log'
 $stderr = Join-Path $artifactDir 'slidev.stderr.log'
-$pnpm = (Get-Command pnpm.cmd -ErrorAction Stop).Source
-$process = Start-Process -FilePath $pnpm `
-    -ArgumentList @('exec', 'slidev', 'slides.md', '--port', "$Port") `
+$node = (Get-Command node.exe -ErrorAction Stop).Source
+$process = Start-Process -FilePath $node `
+    -ArgumentList @('scripts/run-slidev.mjs', 'slides.md', '--port', "$Port") `
     -WorkingDirectory $root -WindowStyle Hidden -PassThru `
     -RedirectStandardOutput $stdout -RedirectStandardError $stderr
 Set-Content -LiteralPath (Join-Path $root '.slidev.pid') -Value $process.Id -Encoding ascii

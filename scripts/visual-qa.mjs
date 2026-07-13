@@ -6,6 +6,7 @@ import { parse } from '@slidev/parser'
 import pixelmatch from 'pixelmatch'
 import { chromium } from 'playwright-chromium'
 import { PNG } from 'pngjs'
+import { resolveSlidevBin, slidevChildEnvironment } from './slidev-runtime.mjs'
 
 const port = Number(process.env.SLIDEV_QA_PORT || 4174)
 const host = 'localhost'
@@ -18,24 +19,17 @@ const slideCount = parsedDeck.slides.length
 const outlineSlideNo =
   parsedDeck.slides.findIndex((slide) => slide.frontmatter.layout === 'outline') + 1
 const registeredReferences = parsedDeck.slides[0]?.frontmatter.references || []
-const pnpm = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
 await fs.mkdir(artifactDir, { recursive: true })
 for (const entry of await fs.readdir(artifactDir, { withFileTypes: true })) {
   if (entry.isFile() && entry.name.endsWith('.png'))
     await fs.unlink(path.join(artifactDir, entry.name))
 }
 
-const serverCommand =
-  process.platform === 'win32'
-    ? {
-        file: process.env.ComSpec || 'cmd.exe',
-        args: ['/d', '/s', '/c', `pnpm.cmd exec slidev slides.md --port ${port}`],
-      }
-    : { file: pnpm, args: ['exec', 'slidev', 'slides.md', '--port', String(port)] }
-const server = spawn(serverCommand.file, serverCommand.args, {
+const server = spawn(process.execPath, [resolveSlidevBin(), 'slides.md', '--port', String(port)], {
   stdio: ['ignore', 'pipe', 'pipe'],
   shell: false,
   detached: process.platform !== 'win32',
+  env: slidevChildEnvironment(),
 })
 let serverLog = ''
 server.stdout.on('data', (chunk) => (serverLog += chunk.toString()))

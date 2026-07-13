@@ -25,6 +25,20 @@ powershell -ExecutionPolicy Bypass -File scripts/new-presentation.ps1 `
 
 The script creates a private repository under `STP-Lib` named `YYMMDD_<TOPIC>_<VENUE>`, records the template revision, and can open a private GitHub Codespace. Example: `260713_QML_QCNC`.
 
+Generated repositories contain presentation content, runtime and QA scripts, required assets, and a packed revision-pinned theme. They do not copy the canonical `theme/` source, generator, or `unilu-slidev/` skill. Each repository receives a README for its own title, venue, editing, remote-control, testing, and publication workflow.
+
+## Phone Remote
+
+For a laptop and phone on the same Wi-Fi network:
+
+```powershell
+pnpm dev -- --remote
+```
+
+The launcher prints an audience URL, a compact phone-control URL at `/entry/`, and a full presenter URL at `/presenter/1`. In a GitHub Codespace, run `pnpm dev:host`; it prints the authenticated forwarded URLs instead. Port 3030 stays private, so the phone must be signed in to GitHub with access to the presentation repository.
+
+For devices on different networks, set `SLIDEV_REMOTE_PASS` and run `pnpm dev -- --remote --tunnel`. The resulting tunnel is temporary and public.
+
 ## Publication Safety
 
 Commits and pushes do not publish the presentation. `.github/workflows/pages.yml` has a manual trigger only and requires the value `PUBLISH`.

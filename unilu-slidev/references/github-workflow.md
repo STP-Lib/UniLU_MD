@@ -6,11 +6,13 @@
 - Presentations: private `STP-Lib/YYMMDD_<TOPIC>_<VENUE>`.
 - Example: `STP-Lib/260713_QML_QCNC`.
 
-Create a presentation with `scripts/new-presentation.ps1`. It creates the private repository from the template, records the template commit, initializes the title, pushes that metadata, applies topics, and optionally opens a private Codespace.
+Create a presentation with `scripts/new-presentation.ps1`. It assembles a lean repository containing presentation content, required runtime and QA files, shared assets, and a packed revision-pinned theme. It records the template commit, initializes the title, creates and pushes the private repository, applies topics, and optionally opens a private Codespace. It does not copy `theme/`, `unilu-slidev/`, or the repository generator into the presentation.
 
 ## Private Browser Review
 
-Use `https://codespaces.new/STP-Lib/<repo>?quickstart=1`. Port 3030 is private in `.devcontainer/devcontainer.json`. Start the deck with `pnpm dev:host`.
+Use `https://codespaces.new/STP-Lib/<repo>?quickstart=1`. Port 3030 is private in `.devcontainer/devcontainer.json`. Start the deck with `pnpm dev:host`. The launcher prints the forwarded audience, compact `/entry/` remote, and full `/presenter/1` links. A phone can use either control link after signing in to a GitHub account that has repository access.
+
+For local same-Wi-Fi control, run `pnpm dev -- --remote`. For different networks, set `SLIDEV_REMOTE_PASS` and add `--tunnel` explicitly; this creates a temporary public tunnel.
 
 Local agents may use a transient clone, but the GitHub repository remains the presentation source of truth. Never expose the Slidev MCP endpoint on a public port.
 
@@ -37,4 +39,4 @@ The workflow repeats the owner, name, and `PUBLISH` checks so a direct click in 
 
 ## Theme Updates
 
-Use `scripts/sync-theme.ps1 -Ref <tag>`. It requires a clean worktree, copies the selected canonical theme and setup, installs from the lockfile, and runs the full check. Review and commit the diff explicitly.
+Use `scripts/sync-theme.ps1 -Ref <tag-or-commit>`. It requires a clean worktree, packs the selected canonical theme, merges shared setup and assets, updates the theme dependency, lockfile, and recorded revision, and runs the full check. Theme source and the canonical skill remain outside the presentation. Review and commit the diff explicitly.
