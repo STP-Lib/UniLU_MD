@@ -45,9 +45,11 @@ if ($repoName -notmatch '^\d{6}_[A-Z0-9]+_[A-Z0-9]+$') {
 Assert-LastExitCode 'GitHub authentication check'
 
 $slug = "$Organization/$repoName"
-$existingRepository = (& gh repo list $Organization --limit 1000 --json name --jq ".[] | select(.name == `"$repoName`") | .name").Trim()
+$repositoriesJson = & gh repo list $Organization --limit 1000 --json name
 Assert-LastExitCode 'Repository availability check'
-if ($existingRepository) {
+$repositories = $repositoriesJson | ConvertFrom-Json
+$repositoryExists = @($repositories | Where-Object { $_.name -eq $repoName }).Count -gt 0
+if ($repositoryExists) {
     throw "Repository $slug already exists."
 }
 
