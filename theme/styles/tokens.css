@@ -1,0 +1,20 @@
+:root {
+  --unilu-navy: #1d2c44;
+  --unilu-periwinkle: #b0bcd2;
+  --unilu-red: #cc4040;
+  --unilu-text-dim: #b8c4d0;
+  --unilu-blue: #5b90cc;
+  --unilu-section-grey: #8a93a3;
+  --unilu-arc-grey: #c9cedb;
+  --unilu-paper: #ffffff;
+  --unilu-ink: #18202a;
+  --unilu-soft: #f1f3f6;
+  --unilu-font-serif: 'XCharter', Charter, Georgia, serif;
+  --unilu-font-sans: 'Latin Modern Sans', Arial, sans-serif;
+  --unilu-font-mono: 'Latin Modern Mono', Consolas, monospace;
+  --unilu-content-left: 88px;
+  --unilu-content-right: 88px;
+  --unilu-content-top: 76px;
+  --unilu-content-bottom: 106px;
+  --unilu-radius: 6px;
+}

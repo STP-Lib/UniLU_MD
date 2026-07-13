@@ -1,0 +1,6 @@
+packages:
+  - theme
+allowBuilds:
+  playwright-chromium: true
+minimumReleaseAgeExclude:
+  - '@iconify-json/lucide@1.2.117'

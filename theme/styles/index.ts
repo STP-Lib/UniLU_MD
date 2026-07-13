@@ -1,0 +1,6 @@
+import '@slidev/client/styles/layouts-base.css'
+import './tokens.css'
+import './typography.css'
+import './layouts.css'
+import './animations.css'
+import './print.css'

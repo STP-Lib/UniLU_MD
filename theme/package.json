@@ -1,0 +1,33 @@
+{
+  "name": "slidev-theme-unilu",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "keywords": [
+    "slidev-theme",
+    "slidev",
+    "unilu",
+    "academic"
+  ],
+  "engines": {
+    "node": ">=20.12.0",
+    "slidev": ">=52.17.0"
+  },
+  "dependencies": {
+    "@slidev/types": "52.17.0",
+    "vue": "3.5.39"
+  },
+  "slidev": {
+    "colorSchema": "light",
+    "defaults": {
+      "aspectRatio": "16/9",
+      "canvasWidth": 1600,
+      "transition": "fade-out",
+      "fonts": {
+        "sans": "Latin Modern Sans",
+        "serif": "XCharter",
+        "mono": "Latin Modern Mono"
+      }
+    }
+  }
+}

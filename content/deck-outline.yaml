@@ -1,0 +1,18 @@
+status: draft
+approval: pending
+title: UniLU Slidev Reference Deck
+audience: academic researchers
+duration_minutes: 12
+slides:
+  - number: 1
+    purpose: Establish the talk and venue
+    action_title: UniLU Slidev Reference Deck
+    exhibit: title geometry
+    evidence: metadata
+    takeaway: The deck follows the UniLU visual contract.
+  - number: 2
+    purpose: Explain the motivation
+    action_title: Browser-native talks can retain academic discipline
+    exhibit: three requirements
+    evidence: workflow contract
+    takeaway: Modern authoring does not relax scientific standards.

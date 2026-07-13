@@ -1,0 +1,18 @@
+{
+  "name": "UniLU Slidev",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  "postCreateCommand": "npm install --global pnpm@11.10.0 && pnpm install --frozen-lockfile && pnpm exec playwright install chromium",
+  "forwardPorts": [3030],
+  "portsAttributes": {
+    "3030": {
+      "label": "UniLU Slidev",
+      "onAutoForward": "openBrowser",
+      "visibility": "private"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["antfu.slidev"]
+    }
+  }
+}

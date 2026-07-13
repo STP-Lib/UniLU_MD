@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.artifacts/
+public/
+pnpm-lock.yaml
+unilu-slidev/references/FREQUENT_TASK_RECIPES.md

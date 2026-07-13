@@ -1,0 +1,112 @@
+@font-face {
+  font-family: 'XCharter';
+  src: url('/fonts/XCharter-Roman.otf') format('opentype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'XCharter';
+  src: url('/fonts/XCharter-Bold.otf') format('opentype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'XCharter';
+  src: url('/fonts/XCharter-Italic.otf') format('opentype');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'XCharter';
+  src: url('/fonts/XCharter-BoldItalic.otf') format('opentype');
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Latin Modern Sans';
+  src: url('/fonts/LMSans-Regular.otf') format('opentype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Latin Modern Sans';
+  src: url('/fonts/LMSans-Bold.otf') format('opentype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Latin Modern Mono';
+  src: url('/fonts/LMMono-Regular.otf') format('opentype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.slidev-layout {
+  color: var(--unilu-ink);
+  font-family: var(--unilu-font-serif);
+  font-size: 29px;
+  line-height: 1.28;
+  letter-spacing: 0;
+}
+
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3,
+.slidev-layout button,
+.slidev-layout .sans {
+  font-family: var(--unilu-font-sans);
+  letter-spacing: 0;
+}
+
+.slidev-layout h1 {
+  color: var(--unilu-navy);
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.08;
+  margin: 0 0 28px;
+  max-width: 1320px;
+}
+
+.slidev-layout h2 {
+  color: var(--unilu-navy);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.slidev-layout p,
+.slidev-layout li {
+  letter-spacing: 0;
+}
+
+.slidev-layout li + li {
+  margin-top: 14px;
+}
+
+.slidev-layout strong {
+  color: var(--unilu-navy);
+  font-weight: 700;
+}
+
+.slidev-layout code,
+.slidev-layout pre {
+  font-family: var(--unilu-font-mono);
+}
+
+.slidev-layout a {
+  color: var(--unilu-blue);
+  text-decoration: none;
+}

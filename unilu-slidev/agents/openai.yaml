@@ -1,0 +1,5 @@
+interface:
+  display_name: 'UniLU Slidev'
+  short_description: 'Build rigorous UniLU academic Slidev decks'
+  brand_color: '#1D2C44'
+  default_prompt: 'Use $unilu-slidev to create and verify a UniLU academic presentation.'

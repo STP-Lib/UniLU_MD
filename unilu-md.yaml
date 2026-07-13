@@ -1,0 +1,9 @@
+schema_version: 1
+template_repository: STP-Lib/UniLU_MD
+template_revision: development
+presentation_repository: STP-Lib/UniLU_MD
+presentation_title: UniLU Slidev Reference Deck
+publication:
+  visibility: private-source
+  pages_enabled: false
+  requires_explicit_confirmation: true

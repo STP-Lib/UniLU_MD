@@ -1,0 +1,10 @@
+@media print {
+  .slidev-layout {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .slidev-vclick-target {
+    transition: none !important;
+  }
+}
