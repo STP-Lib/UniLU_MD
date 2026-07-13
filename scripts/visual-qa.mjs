@@ -31,6 +31,7 @@ const serverCommand =
 const server = spawn(serverCommand.file, serverCommand.args, {
   stdio: ['ignore', 'pipe', 'pipe'],
   shell: false,
+  detached: process.platform !== 'win32',
 })
 let serverLog = ''
 server.stdout.on('data', (chunk) => (serverLog += chunk.toString()))
@@ -211,6 +212,14 @@ async function exists(file) {
 
 function stopProcessTree(pid) {
   if (!pid) return
-  if (process.platform === 'win32') spawnSync('taskkill.exe', ['/PID', String(pid), '/T', '/F'])
-  else process.kill(-pid, 'SIGTERM')
+  if (process.platform === 'win32') {
+    spawnSync('taskkill.exe', ['/PID', String(pid), '/T', '/F'])
+    return
+  }
+
+  try {
+    process.kill(-pid, 'SIGTERM')
+  } catch (error) {
+    if (error?.code !== 'ESRCH') throw error
+  }
 }
