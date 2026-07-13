@@ -36,6 +36,11 @@ function Assert-LastExitCode([string]$Action) {
     }
 }
 
+function ConvertTo-ProjectJson([object]$Value) {
+    $json = $Value | ConvertTo-Json -Depth 20
+    return $json.Replace('\u0026', '&').Replace('\u0027', "'").Replace('\u003c', '<').Replace('\u003e', '>')
+}
+
 function Copy-TemplatePath([string]$RelativePath, [string]$DestinationRoot) {
     $source = Join-Path $templateRoot $RelativePath
     if (-not (Test-Path -LiteralPath $source)) {
@@ -140,7 +145,7 @@ try {
     $package.devDependencies.'slidev-theme-unilu' = "file:.theme/$tarballName"
     [IO.File]::WriteAllText(
         (Join-Path $tempPath 'package.json'),
-        ($package | ConvertTo-Json -Depth 20),
+        (ConvertTo-ProjectJson $package),
         $utf8NoBom
     )
 

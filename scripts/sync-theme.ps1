@@ -13,6 +13,11 @@ function Assert-Native([string]$Action) {
     }
 }
 
+function ConvertTo-ProjectJson([object]$Value) {
+    $json = $Value | ConvertTo-Json -Depth 20
+    return $json.Replace('\u0026', '&').Replace('\u0027', "'").Replace('\u003c', '<').Replace('\u003e', '>')
+}
+
 function Merge-Directory([string]$Source, [string]$Destination) {
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
     Get-ChildItem -LiteralPath $Source -Force | Copy-Item -Destination $Destination -Recurse -Force
@@ -74,7 +79,7 @@ try {
     $packagePath = Join-Path $root 'package.json'
     $package = Get-Content -LiteralPath $packagePath -Raw | ConvertFrom-Json
     $package.devDependencies.'slidev-theme-unilu' = "file:.theme/$tarballName"
-    [IO.File]::WriteAllText($packagePath, ($package | ConvertTo-Json -Depth 20), $utf8NoBom)
+    [IO.File]::WriteAllText($packagePath, (ConvertTo-ProjectJson $package), $utf8NoBom)
 
     $metadataPath = Join-Path $root 'unilu-md.yaml'
     $metadata = Get-Content -LiteralPath $metadataPath -Raw
