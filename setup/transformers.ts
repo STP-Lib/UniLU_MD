@@ -1,5 +1,5 @@
 import { defineMarkdownTransformer, defineTransformersSetup } from '@slidev/types'
-import { findCitations } from '../theme/utils/citations'
+import { findCitations } from 'slidev-theme-unilu/utils/citations'
 
 const citationSyntax = defineMarkdownTransformer(({ s }) => {
   const source = s.toString()
