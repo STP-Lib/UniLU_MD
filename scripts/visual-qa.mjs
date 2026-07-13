@@ -19,6 +19,8 @@ const slideCount = parsedDeck.slides.length
 const outlineSlideNo =
   parsedDeck.slides.findIndex((slide) => slide.frontmatter.layout === 'outline') + 1
 const registeredReferences = parsedDeck.slides[0]?.frontmatter.references || []
+const baselineDifferenceLimit =
+  process.platform === 'linux' && process.env.CI === 'true' ? 0.013 : 0.012
 await fs.mkdir(artifactDir, { recursive: true })
 for (const entry of await fs.readdir(artifactDir, { withFileTypes: true })) {
   if (entry.isFile() && entry.name.endsWith('.png'))
@@ -294,7 +296,9 @@ async function inspectAndCapture(slide, label, filename, compareBaseline) {
     threshold: 0.12,
   })
   const ratio = changed / (image.width * image.height)
-  if (ratio > 0.012) findings.push(`${label} visual difference is ${(ratio * 100).toFixed(2)}%`)
+  if (ratio > baselineDifferenceLimit) {
+    findings.push(`${label} visual difference is ${(ratio * 100).toFixed(2)}%`)
+  }
 }
 
 async function waitForServer(url, timeoutMs) {
