@@ -106,7 +106,7 @@ finally {
 & gh repo edit $slug --add-topic slidev --add-topic academic-presentation --add-topic unilu
 Assert-LastExitCode 'Repository topic update'
 
-$codespaceUrl = "https://codespaces.new/$slug?quickstart=1"
+$codespaceUrl = "https://codespaces.new/${slug}?quickstart=1"
 Write-Host "Created $slug"
 Write-Host "Private browser workspace: $codespaceUrl"
 if ($OpenCodespace) {
