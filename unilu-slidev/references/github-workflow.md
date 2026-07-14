@@ -18,7 +18,9 @@ Local agents may use a transient clone, but the GitHub repository remains the pr
 
 ## Progress Pushes
 
-Commit and push whenever useful. CI may run on push, but `.github/workflows/pages.yml` has no `push` trigger, so progress pushes cannot deploy the site.
+Commit and push whenever useful, but require `Presentation-Workflow.cmd full` or `pnpm check` to pass on the exact commit first. Never push a known failing deck. CI may run on push, but `.github/workflows/pages.yml` has no `push` trigger, so progress pushes cannot deploy the site.
+
+The repository generator runs the same full gate before it creates the private GitHub repository. Generated decks must not inherit the canonical reference deck's visual baselines; presentation-specific baselines are added only after deliberate visual approval.
 
 ## Public Publication
 

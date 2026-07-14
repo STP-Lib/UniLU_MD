@@ -63,6 +63,8 @@ Use the narrowest safe timed gate while authoring:
 
 Run the `content` mode for prose and speaker-note edits that do not change structure or layout. Run `visual` after metadata, outline, layout, click, equation, figure, or asset edits. Always run `full` or `pnpm check` before delivery, export, synchronization, or publication. Timed workflows write machine-readable records under `.artifacts/timings/`; report the latest total and any cache hit or escalation. On non-Windows systems, run the equivalent `node scripts/workflow.mjs <mode>` command.
 
+Before every push, require the full gate to pass on the exact commit being pushed. Never push a known failing deck. Fix inherited scaffold or baseline defects at the canonical source, update the affected deck, and rerun the gate instead of bypassing CI.
+
 ## Author
 
 1. Establish audience, duration, central claim, section order, and evidence map in `content/deck-outline.yaml`.

@@ -292,12 +292,29 @@ Normal pushes keep the source private and do not publish a website. Run `Publish
         $markdownConfigPath
     Assert-LastExitCode 'Generated presentation formatting'
 
+    $presentationBaselinePath = Join-Path $tempPath 'tests/visual/baseline'
+    if (Test-Path -LiteralPath $presentationBaselinePath) {
+        throw 'Generated presentations must not inherit canonical visual baselines.'
+    }
+
     & git -C $tempPath init -b main
     Assert-LastExitCode 'Presentation repository initialization'
     & git -C $tempPath add --all
     Assert-LastExitCode 'Presentation staging'
     & git -C $tempPath commit -m "Initialize $repoName from UniLU_MD"
     Assert-LastExitCode 'Presentation initialization commit'
+
+    & pnpm --dir $tempPath install --frozen-lockfile
+    Assert-LastExitCode 'Generated presentation dependency installation'
+    & pnpm --dir $tempPath exec playwright install chromium
+    Assert-LastExitCode 'Generated presentation browser installation'
+    & pnpm --dir $tempPath check
+    Assert-LastExitCode 'Generated presentation full quality gate'
+    $postCheckChanges = @(& git -C $tempPath status --porcelain --untracked-files=normal)
+    Assert-LastExitCode 'Generated presentation post-check status'
+    if ($postCheckChanges.Count -gt 0) {
+        throw 'The generated presentation changed during validation; refusing to push an unchecked commit.'
+    }
 
     Write-Host "Creating private presentation repository $slug..."
     & gh repo create $slug --private --source $tempPath --remote origin --push --description $Title

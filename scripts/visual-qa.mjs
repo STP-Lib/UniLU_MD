@@ -228,8 +228,8 @@ async function inspectOutlineInteractions(page, slideNo) {
   const outline = page.locator('.unilu-outline').first()
   const sections = outline.locator('.unilu-outline-section')
   const sectionCount = await sections.count()
-  if (sectionCount < 2) {
-    findings.push('outline needs at least two automatically generated sections for interaction QA')
+  if (sectionCount < 1) {
+    findings.push('outline has no automatically generated sections for interaction QA')
     return
   }
 
@@ -237,7 +237,6 @@ async function inspectOutlineInteractions(page, slideNo) {
   if (initiallyVisible !== 0) findings.push('outline subsections should begin collapsed')
 
   const first = sections.nth(0)
-  const second = sections.nth(1)
   const chevron = first.locator('.unilu-outline-chevron')
   const chevronBox = await chevron.boundingBox()
   if (!chevronBox || (await chevron.locator('path,polyline,line').count()) < 1) {
@@ -247,16 +246,22 @@ async function inspectOutlineInteractions(page, slideNo) {
   await page.waitForTimeout(220)
   if ((await first.locator('.unilu-outline-subsection:visible').count()) < 1) {
     findings.push('first outline section did not reveal its subsections')
+    return
   }
 
-  await second.locator('.unilu-outline-trigger').click()
-  await page.waitForTimeout(220)
-  if ((await first.locator('.unilu-outline-subsection:visible').count()) !== 0) {
-    findings.push('opening a second outline section did not collapse the first')
-  }
-  if ((await second.locator('.unilu-outline-subsection:visible').count()) < 1) {
-    findings.push('second outline section did not reveal its subsections')
-    return
+  let expandedSection = first
+  if (sectionCount > 1) {
+    const second = sections.nth(1)
+    await second.locator('.unilu-outline-trigger').click()
+    await page.waitForTimeout(220)
+    if ((await first.locator('.unilu-outline-subsection:visible').count()) !== 0) {
+      findings.push('opening a second outline section did not collapse the first')
+    }
+    if ((await second.locator('.unilu-outline-subsection:visible').count()) < 1) {
+      findings.push('second outline section did not reveal its subsections')
+      return
+    }
+    expandedSection = second
   }
 
   await inspectAndCapture(
@@ -265,10 +270,13 @@ async function inspectOutlineInteractions(page, slideNo) {
     `slide-${String(slideNo).padStart(3, '0')}-expanded.png`,
     false,
   )
-  const target = Number(
-    await second.locator('.unilu-outline-subsection:visible').first().getAttribute('data-target'),
-  )
-  await second.locator('.unilu-outline-subsection:visible').first().click()
+  const visibleSubsection = expandedSection.locator('.unilu-outline-subsection:visible').first()
+  const target = Number(await visibleSubsection.getAttribute('data-target'))
+  if (!Number.isInteger(target) || target < 1) {
+    findings.push('outline subsection does not expose a valid slide target')
+    return
+  }
+  await visibleSubsection.click()
   await page.waitForURL((url) => url.pathname === `/${target}`)
 
   const returnButton = page.locator(`.slidev-page-${target} .unilu-outline-return:visible`).first()
