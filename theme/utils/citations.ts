@@ -4,6 +4,8 @@ export interface DeckReference {
   title: string
   doi?: string
   url?: string
+  relevance?: string
+  evidence?: string
 }
 
 export interface CitationMatch {
@@ -40,6 +42,8 @@ export function normalizeReferences(value: unknown): DeckReference[] {
         title,
         doi: item.doi ? String(item.doi).trim() : undefined,
         url: item.url ? String(item.url).trim() : undefined,
+        relevance: item.relevance ? String(item.relevance).trim() : undefined,
+        evidence: item.evidence ? String(item.evidence).trim() : undefined,
       }
     })
     .filter((entry): entry is DeckReference => Boolean(entry))

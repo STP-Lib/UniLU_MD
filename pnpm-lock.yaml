@@ -59,6 +59,9 @@ importers:
       '@slidev/types':
         specifier: 52.17.0
         version: 52.17.0(@nuxt/kit@3.21.8)(@vue/compiler-sfc@3.5.39)(rolldown@1.1.5)(rollup@4.62.2)(typescript@6.0.3)(vite@8.1.4(@types/node@22.20.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))
+      katex:
+        specifier: 0.17.0
+        version: 0.17.0
       vue:
         specifier: 3.5.39
         version: 3.5.39(typescript@6.0.3)

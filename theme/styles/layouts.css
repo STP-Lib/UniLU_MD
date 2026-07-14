@@ -133,9 +133,117 @@
   font-family: var(--unilu-font-sans);
   font-size: 0.4em;
   font-weight: 700;
-  line-height: 0;
+  line-height: 1;
   margin-left: 0.06em;
   vertical-align: super;
+}
+
+.unilu-cite__button {
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  margin: 0;
+  padding: 0 0.08em;
+}
+
+.unilu-cite__button:hover,
+.unilu-cite__button:focus-visible {
+  color: var(--unilu-red);
+  outline: 1px solid currentColor;
+  outline-offset: 1px;
+}
+
+.unilu-reference-modal {
+  align-items: center;
+  background: rgb(12 26 48 / 56%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 40px;
+  position: fixed;
+  z-index: 1000;
+}
+
+.unilu-reference-modal__panel {
+  background: #fff;
+  border-top: 6px solid var(--unilu-red);
+  box-shadow: 0 20px 60px rgb(12 26 48 / 32%);
+  color: var(--unilu-navy);
+  max-height: min(760px, 86vh);
+  max-width: 940px;
+  overflow: auto;
+  padding: 34px 44px 38px;
+  position: relative;
+  width: min(100%, 940px);
+}
+
+.unilu-reference-modal__close {
+  background: transparent;
+  border: 0;
+  color: var(--unilu-navy);
+  cursor: pointer;
+  font-size: 32px;
+  line-height: 1;
+  padding: 4px 10px;
+  position: absolute;
+  right: 14px;
+  top: 10px;
+}
+
+.unilu-reference-modal__eyebrow {
+  color: var(--unilu-red);
+  font-family: var(--unilu-font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+.unilu-reference-modal__panel h2 {
+  font-size: 30px;
+  line-height: 1.15;
+  margin: 0 48px 8px 0;
+}
+
+.unilu-reference-modal__authors {
+  color: var(--unilu-section-grey);
+  font-family: var(--unilu-font-sans);
+  font-size: 17px;
+  margin: 0 0 26px;
+}
+
+.unilu-reference-modal__section {
+  border-left: 4px solid var(--unilu-blue);
+  margin: 18px 0;
+  padding-left: 16px;
+}
+
+.unilu-reference-modal__section h3 {
+  font-family: var(--unilu-font-sans);
+  font-size: 17px;
+  margin: 0 0 5px;
+}
+
+.unilu-reference-modal__section p {
+  font-size: 17px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.unilu-reference-modal__link {
+  background: var(--unilu-navy);
+  color: #fff !important;
+  display: inline-block;
+  font-family: var(--unilu-font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 18px;
+  padding: 10px 14px;
+  text-decoration: none !important;
 }
 
 .unilu-slide-references {
