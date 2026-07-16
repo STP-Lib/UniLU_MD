@@ -36,7 +36,9 @@ def render(args: argparse.Namespace) -> tuple[str, str]:
     slug = slugify(args.title)
     lines = [
         f"{START}{slug} -->",
+        "",
         f"### {redact(args.title)}",
+        "",
         f"- Problem: {redact(args.problem)}",
     ]
     if args.root_cause:
@@ -51,6 +53,7 @@ def render(args: argparse.Namespace) -> tuple[str, str]:
     if args.tag:
         lines.append("- Tags: " + ", ".join(f"`{redact(t)}`" for t in args.tag))
     lines.append(f"- Learned: {dt.datetime.now().astimezone().isoformat(timespec='seconds')}")
+    lines.append("")
     lines.append(f"{END}{slug} -->")
     return slug, "\n".join(lines) + "\n"
 

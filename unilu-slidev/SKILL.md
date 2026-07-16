@@ -1,6 +1,6 @@
 ---
 name: unilu-slidev
-description: Create, migrate, edit, review, preview, test, export, synchronize, or explicitly publish University of Luxembourg and SnT academic Slidev presentations built from STP-Lib/UniLU_MD. Use for slides.md, UniLU Slidev layouts/components, Beamer-to-Slidev migration, KaTeX equations, SVG figure workflows, private presentation repositories, Codespaces, visual QA, and manual GitHub Pages publication.
+description: Create, migrate, edit, review, preview, test, export, synchronize, or explicitly publish University of Luxembourg and SnT academic Slidev presentations built from STP-Lib/UniLU_MD. Use for slides.md, UniLU Slidev layouts/components, interactive Plotly/Vue figures, Beamer-to-Slidev migration, KaTeX equations, SVG figure workflows, private presentation repositories, Codespaces, visual QA, and manual GitHub Pages publication.
 ---
 
 # UniLU Slidev
@@ -20,6 +20,7 @@ Prefer an existing local presentation repository. If operating on the template i
 - New private GitHub presentation repository: read `references/github-workflow.md`, then run `scripts/new-presentation.ps1` from the canonical template.
 - Substantial writing or restructuring: read `references/content-guidelines.md` and draft `content/deck-outline.yaml` first.
 - Layout implementation: locate the relevant heading in `references/slide-patterns.md` with `rg -n "^## |<layout-or-pattern>"`, then read that section and `references/theme-contract.md`.
+- Interactive data figure: read `references/interactive-plots.md`. Prefer precomputed data with Plotly.js/Vue unless an interaction must run new Python computation or access live or private data.
 - Equations or TeX figures: read `references/latex-compatibility.md`.
 - Beamer migration: read `references/migration-from-beamer.md` plus the relevant source deck.
 - Publication, Codespaces, repository sync, or theme upgrade: read `references/github-workflow.md`.
@@ -106,6 +107,12 @@ pnpm export:clicks
 - Reusable quantum and calculus macros live in `setup/katex.ts`; keep `throwOnError: true`.
 - TikZ, quantikz, and PGFPlots compile to SVG. Retain `.tex`, data, command, source citation, and generated asset together.
 - Never paste raw TikZ into `slides.md` or silently rasterize unsupported equations.
+
+## Interactive plots
+
+Use precomputed Plotly.js/Vue as the default for hover, zoom, trace selection, client-side filtering, sliders over stored results, and animation. Keep the Python generator and data provenance with the figure sources, bundle Plotly locally, and provide a static export fallback. Do not add a Python backend when the browser can perform the requested interaction from stored data.
+
+Use a separate Python service only when an interaction must recompute a simulation, run inference, query live or private data, or would require an impractical number of precomputed states. GitHub Pages cannot host that service. Browser interactivity does not survive PDF export.
 
 ## Synchronize
 
