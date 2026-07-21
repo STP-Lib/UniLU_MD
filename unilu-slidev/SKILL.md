@@ -21,6 +21,7 @@ Prefer an existing local presentation repository. If operating on the template i
 - Substantial writing or restructuring: read `references/content-guidelines.md` and draft `content/deck-outline.yaml` first.
 - Layout implementation: locate the relevant heading in `references/slide-patterns.md` with `rg -n "^## |<layout-or-pattern>"`, then read that section and `references/theme-contract.md`.
 - Interactive data figure: read `references/interactive-plots.md`. Prefer precomputed data with Plotly.js/Vue unless an interaction must run new Python computation or access live or private data.
+- Clickable info chips or detail pop-ups layered over a figure or slide: reuse the `DetailChips` component and read `references/interactive-detail-chips.md`. Do not hand-roll a new modal design.
 - Equations or TeX figures: read `references/latex-compatibility.md`.
 - Beamer migration: read `references/migration-from-beamer.md` plus the relevant source deck.
 - Publication, Codespaces, repository sync, or theme upgrade: read `references/github-workflow.md`.

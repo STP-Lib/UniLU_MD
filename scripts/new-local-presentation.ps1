@@ -252,6 +252,7 @@ $presentationPaths = @(
     'Presentation-Workflow.cmd',
     'Publish-Presentation.cmd',
     'THIRD_PARTY_NOTICES.md',
+    'components/DetailChips.vue',
     'public',
     'scripts/build-pages.mjs',
     'scripts/check-deck.mjs',
