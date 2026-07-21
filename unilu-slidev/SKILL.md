@@ -118,6 +118,8 @@ pnpm export:clicks
 - Reusable quantum and calculus macros live in `setup/katex.ts`; keep `throwOnError: true`.
 - TikZ, quantikz, and PGFPlots compile to SVG. Retain `.tex`, data, command, source citation, and generated asset together.
 - Never paste raw TikZ into `slides.md` or silently rasterize unsupported equations.
+- Compress raster figures before adding them: `pnpm compress <input> --out figures/<name>.png` (deterministic; downscales to a cap and re-encodes near-lossless). Commit the compressed artifact, not the multi-megabyte original.
+- Reference slide images by a relative in-project path, for example `![alt](./figures/name.png)`. The production build imports the path, so a leading-slash `/public` path resolves outside the project and fails the build.
 
 ## Interactive plots
 

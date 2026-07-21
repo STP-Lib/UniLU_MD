@@ -255,6 +255,7 @@ $presentationPaths = @(
     'public',
     'scripts/build-pages.mjs',
     'scripts/check-deck.mjs',
+    'scripts/compress-image.mjs',
     'scripts/deck-rules.mjs',
     'scripts/dev.mjs',
     'scripts/draft.mjs',
