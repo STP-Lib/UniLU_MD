@@ -9,17 +9,39 @@ Prerequisites: Node 20.12 or newer and pnpm 11.10.0.
 ```powershell
 pnpm install
 pnpm exec playwright install chromium
-pnpm dev
 ```
 
-Use the timed gates while editing:
+## Fast authoring loop
+
+This is the iteration loop. Start it once and leave it running:
 
 ```powershell
-.\Presentation-Workflow.cmd build
-.\Presentation-Workflow.cmd content
-.\Presentation-Workflow.cmd visual
-.\Presentation-Workflow.cmd full
-.\Presentation-Workflow.cmd report
+pnpm draft   # live preview (hot reload) + deterministic deck check on every save
+pnpm dev     # live preview only
+```
+
+Then just edit `slides.md`. Slidev runs on Vite, so every save hot-reloads the
+affected slide in the browser with no rebuild. `pnpm draft` also reruns the
+deck-rules contract check on each save and prints a compact pass or fail line, so
+you get instant structural feedback without launching the full quality gate. You
+never build to see a change; building is only for the final static output.
+
+The loop is token-efficient on purpose: seeing a change costs zero tokens (the
+browser hot-reloads), and validating one costs a few (a deterministic script
+prints a short report). Prefer it over re-rendering or re-reading the deck.
+
+## Pre-commit and delivery gates
+
+The timed gates below are for checkpoints, not for watching a change land. Run
+the narrowest one that matches your edit, and always run `full` (or `pnpm check`)
+before you commit, export, or publish:
+
+```powershell
+.\Presentation-Workflow.cmd content  # prose or speaker-note edits: format + deck rules
+.\Presentation-Workflow.cmd visual   # layout, click, equation, figure, or asset edits
+.\Presentation-Workflow.cmd build    # reuse an unchanged verified production build
+.\Presentation-Workflow.cmd full     # fresh build plus full delivery QA
+.\Presentation-Workflow.cmd report   # show recent workflow durations
 ```
 
 `build` reuses an unchanged verified production build, `content` formats and checks local deck content, and `full` always rebuilds before visual QA. Timing records are stored under `.artifacts/timings/`; Node totals include process startup but exclude the final timing-file write. Export a backup PDF with `pnpm export:clicks`.

@@ -9,9 +9,10 @@
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
+    "draft": "node scripts/draft.mjs",
     "dev:raw": "node scripts/run-slidev.mjs slides.md --port 3030 --open",
     "dev:host": "node scripts/dev.mjs --remote --no-open",
-    "free-ports": "node scripts/dev.mjs --free-only",
+    "free-ports": "node scripts/dev.mjs --free-only --free-all",
     "build": "node scripts/run-slidev.mjs build slides.md",
     "build:local": "node scripts/workflow.mjs build",
     "build:public": "node scripts/build-pages.mjs",

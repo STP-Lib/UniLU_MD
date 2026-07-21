@@ -52,12 +52,23 @@ Generated repositories are lean presentation projects. They carry a packed, revi
 
 ## Iterate efficiently
 
-Use the narrowest safe timed gate while authoring:
+The authoring loop is the live preview, not a gate. Start it once and edit `slides.md`:
 
 ```powershell
-.\Presentation-Workflow.cmd build    # install if needed; reuse an unchanged verified build
+pnpm draft   # live hot-reload preview + deterministic deck-rules check on every save
+pnpm dev     # live hot-reload preview only
+```
+
+Slidev runs on Vite, so each save hot-reloads the affected slide with no rebuild. `pnpm draft` additionally reruns the contract check on save and prints a compact pass or fail line. Never build to see a change; build only for the final static output.
+
+Prefer deterministic scripts for feedback, to keep iteration token-efficient. Seeing a change costs zero tokens because the browser hot-reloads; validating one should cost a few, from a script that prints a short report, not from re-rendering or re-reading the deck. Concretely: make targeted `slides.md` edits, read `pnpm check:deck` (or the `draft` watcher line) for structure, use the Slidev MCP for structured slide operations, and reserve `visual`/`full` for checkpoints. Do not screenshot or re-read the whole deck to confirm a routine edit.
+
+Use the narrowest timed gate only at checkpoints, not to watch a change land:
+
+```powershell
 .\Presentation-Workflow.cmd content  # format content and run deck rules
 .\Presentation-Workflow.cmd visual   # add browser QA after rendering-sensitive edits
+.\Presentation-Workflow.cmd build    # install if needed; reuse an unchanged verified build
 .\Presentation-Workflow.cmd full     # fresh build plus full delivery QA
 .\Presentation-Workflow.cmd report   # show recent workflow durations
 ```

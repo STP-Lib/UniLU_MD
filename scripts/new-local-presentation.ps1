@@ -257,6 +257,7 @@ $presentationPaths = @(
     'scripts/check-deck.mjs',
     'scripts/deck-rules.mjs',
     'scripts/dev.mjs',
+    'scripts/draft.mjs',
     'scripts/open-presentation.ps1',
     'scripts/publish-presentation.ps1',
     'scripts/run-slidev.mjs',
@@ -505,14 +506,17 @@ Local source project for the **$Title** presentation for **$EventFull**.
 
 ## Edit and Preview
 
-Edit ``slides.md``. The ``section`` and ``subsection`` fields on content slides automatically populate the interactive outline.
+Start the live loop once, then just edit ``slides.md``. Slidev hot-reloads each
+save in the browser with no rebuild; ``pnpm draft`` also reruns the deck check on
+save and prints a compact pass or fail line. The ``section`` and ``subsection``
+fields on content slides automatically populate the interactive outline.
 
 ``````powershell
-.\Presentation-Workflow.cmd build
-pnpm dev
+pnpm draft   # live preview + deterministic deck check on save
+pnpm dev     # live preview only
 ``````
 
-Use ``.\Presentation-Workflow.cmd content`` while editing. Run ``.\Presentation-Workflow.cmd full`` before sharing or exporting. Create a PDF backup with ``pnpm export:clicks``.
+Never build to see a change. Run ``.\Presentation-Workflow.cmd content`` at prose checkpoints and ``.\Presentation-Workflow.cmd full`` before sharing or exporting. Create a PDF backup with ``pnpm export:clicks``.
 
 ## Theme and Publication
 

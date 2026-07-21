@@ -16,6 +16,9 @@ function flagValue(flag, fallback) {
 
 const port = Number(flagValue('--port', process.env.PORT || '3030'))
 const freeOnly = args.includes('--free-only')
+// By default only reclaim the port we are about to use so unrelated decks keep
+// running. Pass --free-all to close every Slidev server on the machine.
+const freeAll = args.includes('--free-all')
 const noOpen = args.includes('--no-open')
 const remote = args.includes('--remote')
 const tunnel = args.includes('--tunnel')
@@ -80,6 +83,28 @@ function findOtherSlidevPids() {
   }
 }
 
+// Find the PID(s) currently listening on a specific port so cleanup can target
+// only the deck holding that port instead of every Slidev server.
+function findPidsOnPort(candidate) {
+  try {
+    if (isWin) {
+      const command =
+        `Get-NetTCPConnection -LocalPort ${candidate} -State Listen -ErrorAction SilentlyContinue | ` +
+        'Select-Object -ExpandProperty OwningProcess'
+      return parsePids(
+        execFileSync('powershell.exe', ['-NoProfile', '-Command', command], {
+          encoding: 'utf8',
+        }),
+      )
+    }
+    return parsePids(
+      execFileSync('lsof', ['-ti', `tcp:${candidate}`, '-sTCP:LISTEN'], { encoding: 'utf8' }),
+    )
+  } catch {
+    return []
+  }
+}
+
 function parsePids(text) {
   return text
     .split(/\s+/)
@@ -121,13 +146,28 @@ async function main() {
     process.exit(1)
   }
 
-  const pids = findOtherSlidevPids()
-  if (pids.length > 0) {
-    log(`Closing ${pids.length} other Slidev server(s): ${pids.join(', ')}`)
-    pids.forEach(killPid)
+  const slidevPids = findOtherSlidevPids()
+  let pidsToKill
+  if (freeAll) {
+    pidsToKill = slidevPids
+    if (pidsToKill.length > 0) {
+      log(`--free-all: closing ${pidsToKill.length} Slidev server(s): ${pidsToKill.join(', ')}`)
+    } else {
+      log('--free-all: no Slidev servers are running.')
+    }
   } else {
-    log('No other Slidev servers are running.')
+    // Only close a Slidev server that is actually holding our target port; leave
+    // decks on other ports untouched. A non-Slidev process on the port is left
+    // for the busy-port check below to report.
+    const portOwners = new Set(findPidsOnPort(port))
+    pidsToKill = slidevPids.filter((pid) => portOwners.has(pid))
+    if (pidsToKill.length > 0) {
+      log(`Closing the Slidev server on port ${port}: ${pidsToKill.join(', ')}`)
+    } else {
+      log(`No Slidev server is holding port ${port}; other decks are left running.`)
+    }
   }
+  pidsToKill.forEach(killPid)
 
   const free = await waitForFreePort(port)
   if (!free) {
